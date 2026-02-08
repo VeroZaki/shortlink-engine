@@ -1,0 +1,10 @@
+# Gem source
+source "https://rubygems.org"
+
+# Ruby version (optional, good practice)
+ruby "3.2.4"
+
+# Gems
+gem "activerecord", "~> 7.1"
+gem "mysql2", "~> 0.5"
+gem "rake"
