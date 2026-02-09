@@ -11,6 +11,7 @@ module ShortlinkEngine
     config.load_defaults 7.1
     config.api_only = true
     config.autoload_paths << Rails.root.join("lib")
+    config.autoload_paths << Rails.root.join("app/validators")
     config.root = File.expand_path("..", __dir__)
   end
 end

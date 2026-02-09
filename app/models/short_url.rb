@@ -6,9 +6,8 @@ class ShortUrl < ApplicationRecord
   SHORT_CODE_LENGTH = 6
   MAX_COLLISION_RETRIES = 5
 
-  validates :original_url, presence: true
-  validates :short_code, presence: true, uniqueness: true
-  validate :original_url_must_be_valid
+  validates :original_url, presence: true, url: true
+  validates :short_code, presence: true, uniqueness: true, base62: { length: SHORT_CODE_LENGTH }
 
   before_validation :normalize_original_url, on: :create
   before_validation :generate_short_code, on: :create, if: -> { short_code.blank? }
@@ -18,13 +17,14 @@ class ShortUrl < ApplicationRecord
   end
 
   def self.encode_url(original_url)
-    normalized = normalize_url(original_url)
+    normalized = UrlNormalizer.normalize(original_url)
     return nil if normalized.blank?
 
     existing = find_by(original_url: normalized)
     return existing if existing
 
-    create(original_url: normalized)
+    record = new(original_url: normalized)
+    record.save ? record : nil
   end
 
   def self.decode_to_original(short_url)
@@ -36,11 +36,7 @@ class ShortUrl < ApplicationRecord
   end
 
   def self.normalize_url(url)
-    return nil if url.blank?
-
-    url = url.to_s.strip
-    url = "https://#{url}" unless url.match?(%r{\Ahttps?://}i)
-    url if url.match?(%r{\Ahttps?://[^\s]+\z}i)
+    UrlNormalizer.normalize(url)
   end
 
   def self.extract_short_code(short_url)
@@ -55,15 +51,7 @@ class ShortUrl < ApplicationRecord
   private
 
   def normalize_original_url
-    self.original_url = self.class.normalize_url(original_url)
-  end
-
-  def original_url_must_be_valid
-    return if original_url.blank?
-
-    unless self.class.normalize_url(original_url)
-      errors.add(:original_url, "is not a valid URL")
-    end
+    self.original_url = UrlNormalizer.normalize(original_url)
   end
 
   def generate_short_code

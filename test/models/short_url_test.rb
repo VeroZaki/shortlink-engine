@@ -46,4 +46,33 @@ class ShortUrlTest < ActiveSupport::TestCase
   test "decode_to_original returns nil for unknown code" do
     assert_nil ShortUrl.decode_to_original("http://localhost/NoSuch")
   end
+
+  test "encode_url returns nil for invalid URL and does not persist" do
+    record = ShortUrl.encode_url("javascript:alert(1)")
+    assert_nil record
+    assert_equal 0, ShortUrl.where(original_url: "javascript:alert(1)").count
+  end
+
+  test "validations prevent invalid URL from being saved" do
+    record = ShortUrl.new(original_url: "not a url")
+    record.valid?
+    assert_includes record.errors[:original_url], "is not a valid URL"
+    assert_not record.save
+  end
+
+  test "encode_url returns nil when validation fails so controller can respond 422" do
+    # e.g. URL that normalizes but fails custom validation
+    record = ShortUrl.encode_url("https://")
+    assert_nil record
+  end
+
+  test "short_code must be base62 and exactly 6 characters" do
+    record = ShortUrl.new(original_url: "https://example.com", short_code: "ab-cd")
+    record.valid?
+    assert_includes record.errors[:short_code], "must contain only letters and numbers (base62)"
+
+    record.short_code = "abc"
+    record.valid?
+    assert_includes record.errors[:short_code], "must be 6 characters"
+  end
 end
