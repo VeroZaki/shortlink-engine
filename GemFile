@@ -9,8 +9,9 @@ gem "rails", "~> 7.1"
 gem "puma", "~> 6.4"
 gem "rake"
 
-# Database
+# Database (PostgreSQL by default; SQLite used when USE_SQLITE=1)
 gem "pg", "~> 1.5"
+gem "sqlite3", "~> 1.4"
 
 # Testing
 gem "minitest", "~> 5.22"
@@ -18,5 +19,6 @@ gem "minitest-rails", "~> 10.0"
 gem "rack-test", "~> 2.0"
 
 group :development, :test do
+  gem "dotenv-rails", "~> 3.1"
   gem "debug", "~> 1.9"
 end
