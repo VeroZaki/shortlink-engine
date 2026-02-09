@@ -11,6 +11,6 @@ module ShortlinkEngine
     config.load_defaults 7.1
     config.api_only = true
     config.autoload_paths << Rails.root.join("lib")
-    config.root = __dir__.join("..")
+    config.root = File.expand_path("..", __dir__)
   end
 end

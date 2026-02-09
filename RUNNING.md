@@ -4,6 +4,7 @@
 
 - **Ruby 3.0+** (project uses `.ruby-version` 3.2.4; e.g. `rbenv install 3.2.4` if you use rbenv)
 - **Bundler**: `gem install bundler`
+- **PostgreSQL** installed and running (e.g. `brew install postgresql` on macOS, then start the service)
 
 ## Setup
 
@@ -16,9 +17,19 @@
 
 2. **Create and migrate the database**
 
+   Ensure PostgreSQL is running, then:
+
    ```bash
    bundle exec rake db:create
    bundle exec rake db:migrate
+   ```
+
+   By default the app uses user `postgres`, no password, and host `localhost`. Override with env vars if needed:
+
+   ```bash
+   export PGUSER=your_user
+   export PGPASSWORD=your_password
+   export PGHOST=localhost
    ```
 
 3. **(Optional) Set the base URL for short links**
@@ -114,9 +125,10 @@ curl -X POST http://localhost:9292/decode \
 
 ## Database
 
-The app uses **SQLite3** by default (development and test). Data is stored in:
+The app uses **PostgreSQL**. Databases:
 
-- `db/development.sqlite3` (development)
-- `db/test.sqlite3` (test)
+- `shortlink_engine_development` (development)
+- `shortlink_engine_test` (test)
+- `shortlink_engine_production` (production)
 
-To use **MySQL** or **PostgreSQL** in production, update `config/database.yml` and add the matching gem to the Gemfile, then run `bundle install` and migrations on the target environment.
+Set `PGUSER`, `PGPASSWORD`, and `PGHOST` in production (or use a URL in `config/database.yml` if you prefer).

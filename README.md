@@ -65,7 +65,7 @@ Implementing rate limiting, authentication, and redirect policies is recommended
   “Same long URL → same short URL” is implemented by checking `original_url` (with an index) before creating a new row. At scale, this can be moved to a cache (e.g. Redis) keyed by normalized URL to reduce DB load.
 
 - **Database**  
-  SQLite is fine for a demo. For production, use PostgreSQL or MySQL with appropriate connection pooling and backups.
+  The app uses PostgreSQL. Use connection pooling and backups in production.
 
 This codebase is intended as a demo and does not implement the above scaling measures; the README documents how you would approach them.
 

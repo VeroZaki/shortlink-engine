@@ -9,9 +9,8 @@ gem "rails", "~> 7.1"
 gem "puma", "~> 6.4"
 gem "rake"
 
-# Database: SQLite for development/test (no external DB required).
-# For production, switch to mysql2 or pg by changing config/database.yml.
-gem "sqlite3", "~> 1.4"
+# Database
+gem "pg", "~> 1.5"
 
 # Testing
 gem "minitest", "~> 5.22"

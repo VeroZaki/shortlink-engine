@@ -1,16 +1,25 @@
 default: &default
-  adapter: sqlite3
+  adapter: postgresql
+  encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
 
 development:
   <<: *default
-  database: db/development.sqlite3
+  database: shortlink_engine_development
+  username: <%= ENV.fetch("PGUSER", "postgres") %>
+  password: <%= ENV.fetch("PGPASSWORD", "") %>
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
 
 test:
   <<: *default
-  database: db/test.sqlite3
+  database: shortlink_engine_test
+  username: <%= ENV.fetch("PGUSER", "postgres") %>
+  password: <%= ENV.fetch("PGPASSWORD", "") %>
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
 
 production:
   <<: *default
-  database: db/production.sqlite3
+  database: shortlink_engine_production
+  username: <%= ENV["PGUSER"] %>
+  password: <%= ENV["PGPASSWORD"] %>
+  host: <%= ENV["PGHOST"] %>
