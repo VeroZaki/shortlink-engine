@@ -99,6 +99,18 @@ The API will be available at **http://localhost:9292** (rackup) or **http://loca
 bundle exec puma config.ru -p 3000
 ```
 
+## Run with Docker
+
+If you’d rather not install Ruby or Postgres locally:
+
+```bash
+docker compose up --build
+```
+
+The app will be at **http://localhost:3000**. Compose starts Postgres, waits for it to be healthy, then runs migrations and Puma. Data is stored in a volume (`postgres_data`), so it persists between runs.
+
+To change the DB password or base URL, edit the `environment` section in `docker-compose.yml` or use an env file.
+
 ## Run tests
 
 ```bash
