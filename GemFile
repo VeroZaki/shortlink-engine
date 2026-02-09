@@ -15,7 +15,7 @@ gem "sqlite3", "~> 1.4"
 
 # Testing
 gem "minitest", "~> 5.22"
-gem "minitest-rails", "~> 10.0"
+gem "minitest-rails", "~> 7.1"
 gem "rack-test", "~> 2.0"
 
 group :development, :test do
