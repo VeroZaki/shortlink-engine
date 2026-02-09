@@ -1,10 +1,23 @@
 # Gem source
 source "https://rubygems.org"
 
-# Ruby version (optional, good practice)
-ruby "3.2.4"
+# Ruby version (tested on 3.2.x; .ruby-version may pin 3.2.4)
+ruby ">= 3.0.0"
 
-# Gems
-gem "activerecord", "~> 7.1"
-gem "mysql2", "~> 0.5"
+# Rails API
+gem "rails", "~> 7.1"
+gem "puma", "~> 6.4"
 gem "rake"
+
+# Database: SQLite for development/test (no external DB required).
+# For production, switch to mysql2 or pg by changing config/database.yml.
+gem "sqlite3", "~> 1.4"
+
+# Testing
+gem "minitest", "~> 5.22"
+gem "minitest-rails", "~> 10.0"
+gem "rack-test", "~> 2.0"
+
+group :development, :test do
+  gem "debug", "~> 1.9"
+end

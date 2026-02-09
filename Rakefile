@@ -1,4 +1,4 @@
-require 'rake'
+# frozen_string_literal: true
 
-# Load all tasks from lib/tasks
-Dir.glob('lib/tasks/**/*.rake').each { |r| load r }
+require_relative "config/application"
+Rails.application.load_tasks
