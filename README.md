@@ -1,78 +1,32 @@
 # ShortLink Engine
 
-A URL shortening service built with **Ruby on Rails**. Submit a long URL and get a short link; submit the short link to get back the original URL. All state is stored in the database so encoded URLs survive restarts.
+Rails app that shortens URLs. Send it a long URL and get back a short one; send the short one and get the original. Everything is stored in Postgres so it survives restarts.
 
-## Features
+You get two endpoints: **POST /encode** and **POST /decode**, both JSON. Encoding the same URL twice returns the same short link. There’s a bit more on how it’s built in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-- **POST /encode** — Encodes a URL to a shortened URL (JSON in/out).
-- **POST /decode** — Decodes a shortened URL to the original URL (JSON in/out).
-- **Idempotent encode** — Encoding the same URL again returns the same short URL.
-- **Persistence** — Short URLs are stored in the database and work after restarts.
+**To run it:** see [RUNNING.md](RUNNING.md) for setup, DB, and curl examples.
 
-## Architecture
+---
 
-See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for component overview, request-flow diagrams (encode/decode), and data model (Mermaid diagrams; they render on GitHub).
+## Security
 
-## Quick start
+We’re not doing redirects here—decode just returns the original URL in JSON. A few things we did think about:
 
-See **[RUNNING.md](RUNNING.md)** for:
+- **Malicious URLs** – We normalize and store whatever URL you give us. If you later add real redirects, you’ll want something (blocklist, allowlist, or a warning page) so you’re not redirecting to sketchy sites.
+- **Abuse** – No rate limiting or auth in this demo. For production you’d add something like Rack::Attack or require auth.
+- **Short codes** – They’re random and 6 chars, so they’re guessable in theory. Again, rate limiting and monitoring help if you care.
+- **XSS** – It’s a JSON API. Don’t dump the response into HTML without escaping.
+- **SQL** – We use ActiveRecord; no raw SQL from user input.
+- **Errors** – In production, turn off fancy error pages and log on the server so you’re not leaking stack traces.
 
-- Prerequisites and setup
-- Creating the database and running migrations
-- Starting the server
-- Running tests
-- Example API requests (curl)
+---
 
-## Security considerations (attack vectors)
+## Scaling (if you ever need it)
 
-The following risks were considered and are documented; mitigations are in place where feasible for this scope.
+Right now we generate random base62 codes and retry on collision. Fine for one process and normal traffic. If you need more:
 
-1. **Open redirect / malicious target URLs**  
-   - **Risk:** Short links could point to phishing or malicious sites.  
-   - **Mitigation:** URLs are normalized and stored as-is; we do not redirect on decode. This service only returns the original URL in JSON. If you later add HTTP redirects from short URLs, validate the target (e.g. blocklist, allowlist, or redirect warning page).
+- **Encode:** Use a monotonic ID (DB sequence or Redis INCR), turn it into base62, and you’re done—no collisions. Or keep random but longer codes and rely on the unique index + retry.
+- **Decode:** It’s a lookup by `short_code`. Scale with read replicas, Redis in front, connection pooling—no app changes.
+- **Same URL → same short link** is done by looking up `original_url` before creating. At scale you could cache that in Redis keyed by the normalized URL.
 
-2. **Abuse / spam**  
-   - **Risk:** High volume of encodes to flood the database or create many links to bad URLs.  
-   - **Mitigation:** Not implemented in this demo. For production: rate limiting (e.g. Rack::Attack), CAPTCHA, or authentication would help.
-
-3. **Enumeration of short codes**  
-   - **Risk:** Short codes are guessable (e.g. 6-character alphanumeric); clients could probe for valid codes.  
-   - **Mitigation:** Codes are random (not sequential). For production: stricter rate limiting on decode and monitoring for bulk decoding would reduce impact.
-
-4. **Injection (XSS / open redirect in API responses)**  
-   - **Risk:** If URLs were rendered in a browser without escaping, stored URLs could contain script or redirect payloads.  
-   - **Mitigation:** This is a JSON API; clients must treat `original_url` and `short_url` as data and escape when rendering in HTML. No HTML is rendered by the service.
-
-5. **SQL injection**  
-   - **Risk:** User input used in raw SQL could lead to injection.  
-   - **Mitigation:** ActiveRecord is used with parameterized queries; no raw SQL is built from user input.
-
-6. **Information disclosure**  
-   - **Risk:** Verbose errors could leak stack traces or internals.  
-   - **Mitigation:** In production, disable detailed error pages and log errors server-side only.
-
-Implementing rate limiting, authentication, and redirect policies is recommended before exposing the service publicly.
-
-## Scalability and collision handling
-
-- **Collision problem**  
-  Short codes are random (6 characters, base62). Collisions are possible; the implementation retries with a new random code up to a fixed number of times. For a single process and moderate volume this is sufficient. For very high throughput, see below.
-
-- **Scaling encode throughput**  
-  - **Option A (recommended for scaling):** Use a **monotonically increasing ID** (e.g. DB sequence or Redis INCR) and encode the number in base62 to get the short code. No collision by design; ordering is preserved.  
-  - **Option B:** Keep random codes but make the code longer (e.g. 8–10 characters) to reduce collision probability, and use a unique index + retry (or “insert and catch unique violation”) in the database when a collision occurs.
-
-- **Scaling decode (reads)**  
-  Decode is a lookup by `short_code` (unique index). It scales with read replicas, caching (e.g. Redis in front of DB), and connection pooling. No application-level change required beyond infrastructure.
-
-- **Idempotent encode**  
-  “Same long URL → same short URL” is implemented by checking `original_url` (with an index) before creating a new row. At scale, this can be moved to a cache (e.g. Redis) keyed by normalized URL to reduce DB load.
-
-- **Database**  
-  The app uses PostgreSQL. Use connection pooling and backups in production.
-
-This codebase is intended as a demo and does not implement the above scaling measures; the README documents how you would approach them.
-
-## License
-
-MIT (or your chosen license).
+Postgres is the only store. Use pooling and backups when you go to production.
