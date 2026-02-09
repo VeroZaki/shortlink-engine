@@ -9,6 +9,10 @@ A URL shortening service built with **Ruby on Rails**. Submit a long URL and get
 - **Idempotent encode** — Encoding the same URL again returns the same short URL.
 - **Persistence** — Short URLs are stored in the database and work after restarts.
 
+## Architecture
+
+See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for component overview, request-flow diagrams (encode/decode), and data model (Mermaid diagrams; they render on GitHub).
+
 ## Quick start
 
 See **[RUNNING.md](RUNNING.md)** for:
