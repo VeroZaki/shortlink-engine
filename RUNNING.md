@@ -119,6 +119,8 @@ Make sure the development DB has been created and migrated at least once (so `db
 bundle exec rake test
 ```
 
+This is a minimal Rails app, so `bundle exec rails test` will not run tests (it shows the `rails new` help). Use `rake test` above. Alternatively: `bundle exec ./bin/rails test` (run `chmod +x bin/rails` if you get "Permission denied").
+
 The first time, this will prepare the test database (create it and load the schema) before running tests. If you see a database connection error, run:
 
 ```bash
