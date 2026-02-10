@@ -113,11 +113,21 @@ To change the DB password or base URL, edit the `environment` section in `docker
 
 ## Run tests
 
+Make sure the development DB has been created and migrated at least once (so `db/schema.rb` exists). Then:
+
 ```bash
 bundle exec rake test
 ```
 
-Or run a single test file:
+The first time, this will prepare the test database (create it and load the schema) before running tests. If you see a database connection error, run:
+
+```bash
+bundle exec rake db:create db:migrate
+bundle exec rake db:test:prepare
+bundle exec rake test
+```
+
+To run a single test file:
 
 ```bash
 bundle exec ruby -Itest test/integration/short_links_test.rb
